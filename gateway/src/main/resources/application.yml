@@ -25,6 +25,8 @@ zuul:
             path: /auth/**
             stripPrefix: false
             sensitiveHeaders:
+        resource-server:
+            path: /home/**
     add-host-header: true
 
 logging:

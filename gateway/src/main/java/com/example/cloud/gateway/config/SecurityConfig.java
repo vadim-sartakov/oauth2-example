@@ -19,7 +19,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 .formLogin().and()
-                .csrf().ignoringAntMatchers(/*"/auth/login", */"/auth/oauth/token");
+                .csrf().ignoringAntMatchers("/auth/login", "/auth/oauth/token");
     }
     
 }
