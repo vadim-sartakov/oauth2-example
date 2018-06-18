@@ -7,12 +7,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoRestTemplateFactory;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -20,6 +19,7 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetailsSource;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.WebUtils;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
@@ -27,7 +27,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new OAuth2AuthenticationDetailsSource();
     
     @Autowired private ResourceServerTokenServices tokenServices;
-    @Autowired private UserInfoRestTemplateFactory restTemplateFactory;
+    @Autowired private RestTemplateBuilder restTemplateBuilder;
     
     public JWTAuthorizationFilter(AuthenticationManager authenticationManager) {
         super(authenticationManager);
@@ -43,8 +43,14 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
             try {
                 authentication = tokenServices.loadAuthentication(cookie.getValue());
             } catch (AuthenticationException | InvalidTokenException e) {
-                OAuth2RestOperations restTemplate = restTemplateFactory.getUserInfoRestTemplate();
-                OAuth2AccessToken accessToken = restTemplate.getAccessToken();
+                RestTemplate restTemplate = restTemplateBuilder
+                        .basicAuthorization("web", "secret")
+                        .build();
+                OAuth2AccessToken accessToken = restTemplate.postForObject(
+                        "http://localhost:8080/auth/oauth/token?grant_type=refresh_token&refresh_token={refresh_token}",
+                        null,
+                        OAuth2AccessToken.class,
+                        WebUtils.getCookie(request, "refresh-token").getValue());
                 authentication = tokenServices.loadAuthentication(accessToken.getValue());
             }
             request.setAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE, cookie.getValue());
