@@ -14,7 +14,7 @@ security:
             access-token-uri: http://localhost:8080/auth/oauth/token
             user-authorization-uri: http://localhost:8080/auth/oauth/authorize
         resource:
-            user-info-uri: http://localhost:8080/auth/me
+            jwt.key-value: test
     
 zuul:
     routes:
@@ -32,3 +32,4 @@ zuul:
 logging:
     level:
         org.springframework.security: DEBUG
+        org.springframework.cloud.netflix.zuul: DEBUG
