@@ -1,8 +1,5 @@
 server:
     port: 8080
-    session:
-        cookie:
-            name: ui-session
             
 spring.application.name: gateway            
     
