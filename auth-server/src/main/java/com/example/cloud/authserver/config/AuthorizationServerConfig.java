@@ -27,12 +27,18 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
-                .withClient("web")
-                .secret("secret")
-                .authorizedGrantTypes("authorization_code", "refresh_token", "password")
-                .accessTokenValiditySeconds(10)
-                .scopes("info")
-                .autoApprove(true);
+                    .withClient("system")
+                        .secret("secret")
+                        .authorizedGrantTypes("implicit")
+                        .scopes("system")
+                        .autoApprove(true)
+                .and()
+                    .withClient("web")
+                        .secret("secret")
+                        .authorizedGrantTypes("implicit", "authorization_code", "refresh_token", "password")
+                        .accessTokenValiditySeconds(10)
+                        .scopes("info")
+                        .autoApprove(true);
     }
     
     @Bean
