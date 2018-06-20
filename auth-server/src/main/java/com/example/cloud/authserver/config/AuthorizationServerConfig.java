@@ -29,14 +29,15 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         clients.inMemory()
                     .withClient("system")
                         .secret("secret")
-                        .authorizedGrantTypes("implicit")
+                        .authorizedGrantTypes("password", "refresh_token")
                         .scopes("system")
+                        .accessTokenValiditySeconds(60)
                         .autoApprove(true)
                 .and()
                     .withClient("web")
                         .secret("secret")
                         .authorizedGrantTypes("implicit", "authorization_code", "refresh_token", "password")
-                        .accessTokenValiditySeconds(10)
+                        .accessTokenValiditySeconds(60)
                         .scopes("info")
                         .autoApprove(true);
     }
