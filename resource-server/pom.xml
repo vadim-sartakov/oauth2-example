@@ -11,10 +11,9 @@
     <name>Resource server</name>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.13.RELEASE</version>
-        <relativePath/>
+        <groupId>com.example.cloud</groupId>
+        <artifactId>cloud-build</artifactId>
+        <version>1.0.0</version>
     </parent>
 
     <properties>
