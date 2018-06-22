@@ -14,6 +14,7 @@
     </parent>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring-cloud.version>Edgware.SR3</spring-cloud.version>
     </properties>
     <modules>
         <module>shared-libraries</module>
@@ -22,4 +23,22 @@
         <module>gateway</module>
         <module>discovery-server</module>
     </modules>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.example.cloud</groupId>
+                <artifactId>shared-libraries</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
 </project>

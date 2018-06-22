@@ -22,10 +22,8 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 
-public class OAuth2ServerAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class OAuth2UsernamePasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    @Autowired private HttpServletRequest request;
-    @Autowired private HttpServletResponse response;
     @Autowired private ServletContext servletContext;
      
     @Autowired private TokenEndpoint tokenEndpoint;
@@ -46,15 +44,14 @@ public class OAuth2ServerAuthenticationFilter extends UsernamePasswordAuthentica
                 Arrays.asList(new SimpleGrantedAuthority("ROLE_SYSTEM")));
         try {
             responseEntity = tokenEndpoint.postAccessToken(clientAuthentication, parameters);
-            // TODO: Analyze wrong credentials
         } catch (HttpRequestMethodNotSupportedException e) {
             throw new RuntimeException(e);
         }
         
         OAuth2AccessToken token = responseEntity.getBody();
                 
-        addCookie("access-token", token.getValue(), true);
-        addCookie("refresh-token", token.getRefreshToken().getValue(), true);
+        addCookie("access-token", token.getValue(), request, response);
+        addCookie("refresh-token", token.getRefreshToken().getValue(), request, response);
         csrfTokenRepository.saveToken(null, request, response);
         CsrfToken csrfToken = csrfTokenRepository.generateToken(request);
         csrfTokenRepository.saveToken(csrfToken, request, response);
@@ -65,10 +62,10 @@ public class OAuth2ServerAuthenticationFilter extends UsernamePasswordAuthentica
         
     }
     
-    private void addCookie(String name, String value, boolean httpOnly) {
+    private void addCookie(String name, String value, HttpServletRequest request, HttpServletResponse response) {
         Cookie cookie = new Cookie(name, value);
         cookie.setSecure(request.isSecure());
-        cookie.setHttpOnly(httpOnly);
+        cookie.setHttpOnly(true);
         cookie.setPath(servletContext.getContextPath().isEmpty() ? "/" : servletContext.getContextPath());
         response.addCookie(cookie);
     }
