@@ -12,7 +12,7 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class AuthenticationListener implements ApplicationListener<AuthenticationSuccessEvent> {
 
     public static String ACCESS_TOKEN_NAME = "access-token";
