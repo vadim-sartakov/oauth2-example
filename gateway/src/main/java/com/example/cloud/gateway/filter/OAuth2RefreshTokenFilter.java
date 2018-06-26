@@ -2,6 +2,8 @@ package com.example.cloud.gateway.filter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -61,9 +63,7 @@ public class OAuth2RefreshTokenFilter extends GenericFilterBean {
                         }
                     }
                     clientContext.setAccessToken(accessToken);
-                    
-                    if (accessToken != null)
-                        httpRequest = new RefreshTokenRequestWrapper(httpRequest, accessToken);
+                    httpRequest = new RefreshTokenRequestWrapper(httpRequest, accessToken);
 
                     if (logger.isDebugEnabled()) {
                         logger.debug("Forwarding request to " + httpRequest.getRequestURI());
@@ -88,10 +88,16 @@ public class OAuth2RefreshTokenFilter extends GenericFilterBean {
         @Override
         public Cookie[] getCookies() {
             Cookie[] cookies = super.getCookies();
-            Arrays.asList(cookies).stream()
-                    .filter(cookie -> cookie.getName().equals(OAuth2AccessToken.ACCESS_TOKEN))
-                    .findFirst()
-                    .ifPresent(cookie -> cookie.setValue(accessToken.getValue()));
+            if (accessToken == null) {
+                cookies = Arrays.stream(cookies)
+                        .filter(cookie -> !(cookie.getName().equals(OAuth2AccessToken.ACCESS_TOKEN) || cookie.getName().equals(OAuth2AccessToken.REFRESH_TOKEN)))
+                        .toArray(Cookie[]::new);
+            } else {
+                Arrays.stream(cookies)
+                        .filter(cookie -> cookie.getName().equals(OAuth2AccessToken.ACCESS_TOKEN))
+                        .findFirst()
+                        .ifPresent(cookie -> cookie.setValue(accessToken.getValue()));
+            }
             return cookies;
         }
 
