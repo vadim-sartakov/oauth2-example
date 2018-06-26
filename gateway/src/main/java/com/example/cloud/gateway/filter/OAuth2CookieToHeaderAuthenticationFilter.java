@@ -19,24 +19,29 @@ public class OAuth2CookieToHeaderAuthenticationFilter extends GenericFilterBean 
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        HttpServletRequestWrapper requestWrapper = new HttpServletRequestWrapper(httpRequest) {
-            @Override
-            public Enumeration<String> getHeaders(String name) {
-                Enumeration<String> headers = super.getHeaders(name);
-                if (!headers.hasMoreElements() && name.equals("Authorization")) {
-                    Cookie cookie = WebUtils.getCookie(this, OAuth2AccessToken.ACCESS_TOKEN);
-                    if (cookie != null)
-                        headers = Collections.enumeration(Arrays.asList("Bearer " + cookie.getValue()));
-                }
-                return headers;
-            }
-            
-        };
-        
+        HttpServletRequestWrapper requestWrapper = new CookieToHeaderAuthorizationRequestWrapper(httpRequest);        
         chain.doFilter(requestWrapper, response);
+    }
+    
+    public static class CookieToHeaderAuthorizationRequestWrapper extends HttpServletRequestWrapper {
         
+        public CookieToHeaderAuthorizationRequestWrapper(HttpServletRequest request) {
+            super(request);
+        }
+        
+        @Override
+        public Enumeration<String> getHeaders(String name) {
+            Enumeration<String> headers = super.getHeaders(name);
+            if (!headers.hasMoreElements() && name.equals("Authorization")) {
+                Cookie cookie = WebUtils.getCookie(this, OAuth2AccessToken.ACCESS_TOKEN);
+                if (cookie != null) {
+                    headers = Collections.enumeration(Arrays.asList("Bearer " + cookie.getValue()));
+                }
+            }
+            return headers;
+        }
+
     }
     
 }

@@ -65,6 +65,7 @@ public class OAuth2StatelessClientContextConfiguration {
             }
             
             addCookie(OAuth2AccessToken.ACCESS_TOKEN, accessToken.getValue(), -1);
+            
             if (accessToken.getRefreshToken() != null)
                 addCookie(OAuth2AccessToken.REFRESH_TOKEN, accessToken.getRefreshToken().getValue(), -1);
             
