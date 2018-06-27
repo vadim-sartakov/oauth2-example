@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,18 +23,14 @@ import org.springframework.security.oauth2.client.token.AccessTokenRequest;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.web.util.WebUtils;
 
 public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
 
     public static final String STATE_COOKIE = "state";
 
-    @Autowired
-    private HttpServletRequest request;
-    @Autowired
-    private HttpServletResponse response;
-    @Autowired
-    private ServletContext servletContext;
+    @Autowired private HttpServletRequest request;
+    @Autowired private HttpServletResponse response;
+    @Autowired private ServletContext servletContext;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -72,8 +69,8 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
             return currentAccessToken;
         }
 
-        Cookie accessTokenCookie = WebUtils.getCookie(request, OAuth2AccessToken.ACCESS_TOKEN);
-        Cookie refreshTokenCookie = WebUtils.getCookie(request, OAuth2AccessToken.REFRESH_TOKEN);
+        Cookie accessTokenCookie = getCookie(request, OAuth2AccessToken.ACCESS_TOKEN);
+        Cookie refreshTokenCookie = getCookie(request, OAuth2AccessToken.REFRESH_TOKEN);
 
         if (accessTokenCookie == null) {
             return null;
@@ -86,6 +83,18 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
 
         return accessToken;
 
+    }
+    
+    private Cookie getCookie(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        return cookies == null ? null :
+                Arrays.stream(request.getCookies())
+                        .filter(cookie -> {
+                            String cookiePath = cookie.getPath() == null ? "/" : cookie.getPath();
+                            return cookie.getName().equals(name) &&
+                                    cookiePath.equals(getContextPath());
+                            
+                        }).findFirst().orElse(null);
     }
 
     @Override
@@ -107,7 +116,7 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
     @Override
     public Object removePreservedState(String stateKey) {
 
-        Cookie cookie = WebUtils.getCookie(request, STATE_COOKIE);
+        Cookie cookie = getCookie(request, STATE_COOKIE);
         if (cookie == null) {
             return null;
         }
@@ -142,8 +151,12 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
         cookie.setSecure(request.isSecure());
         cookie.setHttpOnly(true);
         cookie.setMaxAge(maxAge);
-        cookie.setPath(servletContext.getContextPath().isEmpty() ? "/" : servletContext.getContextPath());
+        cookie.setPath(getContextPath());
         response.addCookie(cookie);
+    }
+    
+    private String getContextPath() {
+        return servletContext.getContextPath().isEmpty() ? "/" : servletContext.getContextPath();
     }
 
 }

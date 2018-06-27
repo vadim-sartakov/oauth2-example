@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Import;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Import({ OAuth2StatelessClientConfiguration.class, OAuth2StatelessClientSecurityConfiguration.class })
+@Import(OAuth2StatelessClientConfiguration.class)
 public @interface EnableOAuth2StatelessClient {
     
 }
