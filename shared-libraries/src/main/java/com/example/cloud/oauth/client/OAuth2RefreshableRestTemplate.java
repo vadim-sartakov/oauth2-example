@@ -27,6 +27,11 @@ public class OAuth2RefreshableRestTemplate extends OAuth2RestTemplate {
 
     @Override
     protected OAuth2AccessToken acquireAccessToken(OAuth2ClientContext oauth2Context) throws UserRedirectRequiredException {
+        refreshAccessToken();
+        return super.acquireAccessToken(oauth2Context);
+    }
+    
+    public OAuth2AccessToken refreshAccessToken() {
         OAuth2AccessToken accessToken = context.getAccessToken();
         if (accessToken != null && accessToken.isExpired()) {
             accessToken = accessTokenProvider.refreshAccessToken(
@@ -34,8 +39,7 @@ public class OAuth2RefreshableRestTemplate extends OAuth2RestTemplate {
                     context.getAccessTokenRequest()
             );
             context.setAccessToken(accessToken);
-        } else
-            accessToken = super.acquireAccessToken(oauth2Context);
+        }
         return accessToken;
     }
     
