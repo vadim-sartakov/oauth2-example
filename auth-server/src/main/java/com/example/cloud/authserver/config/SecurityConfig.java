@@ -1,8 +1,6 @@
 package com.example.cloud.authserver.config;
 
-import com.example.cloud.oauth.client.OAuth2RefreshableRestTemplate;
-import com.example.cloud.oauth.client.configuration.EnableOAuth2StatelessClient;
-import com.example.cloud.shared.filter.OAuth2AuthenticationFilter;
+import com.example.cloud.shared.oauth.client.configuration.EnableOAuth2StatelessClient;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +13,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails;
 import org.springframework.security.oauth2.common.AuthenticationScheme;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -34,8 +35,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .requestMatcher(new NegatedRequestMatcher(new AntPathRequestMatcher("/oauth")))
                 .authorizeRequests()
-                    .antMatchers("/login**", "/oauth/**")
+                    .antMatchers("/login")
                         .permitAll()
                     .anyRequest()
                         .authenticated()
@@ -43,30 +45,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .sessionManagement()
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                    // Gateway already has csrf
                     .csrf().disable()
-                    .addFilterBefore(clientAuthenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class)
-                    .addFilterBefore(authenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class);
+                    .addFilterBefore(clientAuthenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class);
     }
     
     @Bean
-    public OAuth2RefreshableRestTemplate authenticationRestTemplate() {
-        return new OAuth2RefreshableRestTemplate(resourceDetails, clientContext);
+    public OAuth2RestTemplate authenticationRestTemplate() {
+        return new OAuth2RestTemplate(resourceDetails, clientContext);
     }
     
     @Bean
     public OAuth2ClientAuthenticationProcessingFilter clientAuthenticationFilter() {
-        OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter("/login");
+        OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter("/login") {
+            // Narrowing authentication execution for POST requests only.
+            // Since we use password grant type for self authentication.
+            @Override
+            protected boolean requiresAuthentication(HttpServletRequest request, HttpServletResponse response) {
+                return request.getMethod().equals("POST") && super.requiresAuthentication(request, response);
+            }
+        };
         filter.setTokenServices(tokenServices);
         filter.setRestTemplate(authenticationRestTemplate());
         return filter;
     }
     
-    @Bean
-    public OAuth2AuthenticationFilter authenticationFilter() {
-        return new OAuth2AuthenticationFilter(tokenServices, authenticationRestTemplate());
-    }
-        
     @Configuration
     public static class ResourceDetailsConfig {
 

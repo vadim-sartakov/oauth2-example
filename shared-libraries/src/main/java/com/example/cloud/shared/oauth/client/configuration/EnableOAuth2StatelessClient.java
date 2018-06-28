@@ -1,4 +1,4 @@
-package com.example.cloud.oauth.client.configuration;
+package com.example.cloud.shared.oauth.client.configuration;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

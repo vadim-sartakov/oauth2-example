@@ -1,6 +1,6 @@
-package com.example.cloud.oauth.client.configuration;
+package com.example.cloud.shared.oauth.client.configuration;
 
-import com.example.cloud.oauth.client.OAuth2StatelessClientContext;
+import com.example.cloud.shared.oauth.client.OAuth2StatelessClientContext;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;

@@ -1,4 +1,4 @@
-package com.example.cloud.authserver.config;
+package com.example.cloud.gateway.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
