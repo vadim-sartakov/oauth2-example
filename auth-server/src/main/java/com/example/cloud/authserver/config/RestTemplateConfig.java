@@ -2,10 +2,10 @@ package com.example.cloud.authserver.config;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -17,15 +17,14 @@ import org.springframework.security.oauth2.common.AuthenticationScheme;
 @Configuration
 public class RestTemplateConfig {
     
-    @Autowired private ResourceOwnerPasswordResourceDetails resourceDetails;
-    @Autowired private OAuth2ClientContext clientContext;
-    
     @Bean
+    @Primary
     @LoadBalanced
-    public OAuth2RestTemplate systemRestTemplate() {
+    public OAuth2RestTemplate authServerRestTemplate(ResourceOwnerPasswordResourceDetails resourceDetails,
+            OAuth2ClientContext clientContext) {
         return new OAuth2RestTemplate(resourceDetails, clientContext);
     }
-    
+        
     @Configuration
     public static class ResourceDetailsConfig {
 

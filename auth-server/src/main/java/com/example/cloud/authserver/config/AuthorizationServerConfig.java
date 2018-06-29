@@ -3,6 +3,7 @@ package com.example.cloud.authserver.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -29,10 +30,10 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
-                    .withClient("system")
+                    .withClient("authserver")
                         .secret("secret")
                         .authorizedGrantTypes("password", "refresh_token")
-                        .scopes("system")
+                        .scopes("authserver")
                         .accessTokenValiditySeconds(60)
                         .autoApprove(true)
                 .and()
@@ -50,7 +51,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     }
     
     @Bean
-    public ResourceServerTokenServices jwtTokenServices() {
+    @Primary
+    public ResourceServerTokenServices authServerTokenServices() {
         DefaultTokenServices services = new DefaultTokenServices();
         services.setTokenStore(tokenStore());
         return services;

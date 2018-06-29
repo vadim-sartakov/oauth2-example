@@ -26,8 +26,10 @@ import org.springframework.web.util.WebUtils;
 
 public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
 
-    public static final String STATE_COOKIE = "state";
-
+    private final String stateCookieName;
+    private final String accessTokenCookieName;
+    private final String refreshTokenCookieName;
+    
     @Autowired private HttpServletRequest request;
     @Autowired private HttpServletResponse response;
     @Autowired private ServletContext servletContext;
@@ -40,22 +42,29 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
     private OAuth2AccessToken currentAccessToken;
 
     public OAuth2StatelessClientContext(AccessTokenRequest accessTokenRequest) {
+        this(accessTokenRequest, "");
+    }
+    
+    public OAuth2StatelessClientContext(AccessTokenRequest accessTokenRequest, String prefix) {
         super(accessTokenRequest);
+        this.stateCookieName = prefix + "_" + "state";
+        this.accessTokenCookieName = prefix + "_" + OAuth2AccessToken.ACCESS_TOKEN;
+        this.refreshTokenCookieName = prefix + "_" + OAuth2AccessToken.REFRESH_TOKEN;
     }
 
     @Override
     public void setAccessToken(OAuth2AccessToken accessToken) {
 
         if (accessToken == null) {
-            addCookie(OAuth2AccessToken.ACCESS_TOKEN, "", 0);
-            addCookie(OAuth2AccessToken.REFRESH_TOKEN, "", 0);
+            addCookie(accessTokenCookieName, "", 0);
+            addCookie(refreshTokenCookieName, "", 0);
             return;
         }
 
-        addCookie(OAuth2AccessToken.ACCESS_TOKEN, accessToken.getValue(), -1);
+        addCookie(accessTokenCookieName, accessToken.getValue(), -1);
 
         if (accessToken.getRefreshToken() != null) {
-            addCookie(OAuth2AccessToken.REFRESH_TOKEN, accessToken.getRefreshToken().getValue(), -1);
+            addCookie(refreshTokenCookieName, accessToken.getRefreshToken().getValue(), -1);
         }
 
         currentAccessToken = accessToken;
@@ -69,8 +78,8 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
             return currentAccessToken;
         }
 
-        Cookie accessTokenCookie = WebUtils.getCookie(request, OAuth2AccessToken.ACCESS_TOKEN);
-        Cookie refreshTokenCookie = WebUtils.getCookie(request, OAuth2AccessToken.REFRESH_TOKEN);
+        Cookie accessTokenCookie = WebUtils.getCookie(request, accessTokenCookieName);
+        Cookie refreshTokenCookie = WebUtils.getCookie(request, refreshTokenCookieName);
 
         if (accessTokenCookie == null) {
             return null;
@@ -97,14 +106,14 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        addCookie(STATE_COOKIE, state, -1);
+        addCookie(stateCookieName, state, -1);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Object removePreservedState(String stateKey) {
 
-        Cookie cookie = WebUtils.getCookie(request, STATE_COOKIE);
+        Cookie cookie = WebUtils.getCookie(request, stateCookieName);
         if (cookie == null) {
             return null;
         }
@@ -121,10 +130,10 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
         Object value = stateMap.remove(stateKey);
 
         if (stateMap.isEmpty()) {
-            addCookie(STATE_COOKIE, "", 0);
+            addCookie(stateCookieName, "", 0);
         } else {
             try {
-                addCookie(STATE_COOKIE, objectMapper.writeValueAsString(stateMap), -1);
+                addCookie(stateCookieName, objectMapper.writeValueAsString(stateMap), -1);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
