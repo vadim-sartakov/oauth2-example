@@ -1,4 +1,4 @@
-package com.example.cloud.authserver.config;
+package com.example.cloud.authserver.config.client;
 
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;

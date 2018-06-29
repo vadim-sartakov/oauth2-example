@@ -34,10 +34,8 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
     @Autowired private HttpServletResponse response;
     @Autowired private ServletContext servletContext;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private TokenStore tokenStore;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private TokenStore tokenStore;
 
     private OAuth2AccessToken currentAccessToken;
 

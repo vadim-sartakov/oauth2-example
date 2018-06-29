@@ -9,7 +9,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
@@ -22,15 +21,14 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 @EnableWebSecurity
 @EnableOAuth2StatelessClient
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-            
-    @Autowired private ResourceServerTokenServices tokenServices;
-    @Autowired private OAuth2RestTemplate restTemplate;
     
     @Autowired private OAuth2StatelessClientAuthenticationFilter authenticationFilter;
-    
+        
     @Autowired
     @Qualifier("githubClientAuthenticationFilter")
     private OAuth2ClientAuthenticationProcessingFilter githubClientAuthenticationFilter;
+    
+    @Autowired private OAuth2ClientAuthenticationProcessingFilter authServerClientAuthenticationFilter;
     
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -48,16 +46,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .csrf()
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
-                    .addFilterBefore(clientAuthenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class)
+                    .addFilterBefore(authServerClientAuthenticationFilter, AbstractPreAuthenticatedProcessingFilter.class)
                     .addFilterBefore(githubClientAuthenticationFilter, AbstractPreAuthenticatedProcessingFilter.class)
                     .addFilterBefore(authenticationFilter, AbstractPreAuthenticatedProcessingFilter.class);
     }
         
-    private OAuth2ClientAuthenticationProcessingFilter clientAuthenticationFilter() {
-        OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter("/login");
-        filter.setTokenServices(tokenServices);
-        filter.setRestTemplate(restTemplate);
-        return filter;
-    }
-    
 }

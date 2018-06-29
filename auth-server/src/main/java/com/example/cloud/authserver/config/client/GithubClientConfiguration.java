@@ -1,4 +1,4 @@
-package com.example.cloud.authserver.config;
+package com.example.cloud.authserver.config.client;
 
 import com.example.cloud.shared.oauth.client.OAuth2StatelessClientContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import org.springframework.security.oauth2.client.token.grant.code.Authorization
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
 @Configuration
-public class GithubConfiguration {
+public class GithubClientConfiguration {
  
     @Autowired
     @Qualifier("accessTokenRequest")
