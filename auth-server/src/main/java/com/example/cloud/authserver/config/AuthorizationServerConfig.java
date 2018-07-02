@@ -17,12 +17,19 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
     
-    @Autowired private AuthenticationManager authenticationManager;
-    @Autowired private TokenStore tokenStore;
-    @Autowired private AccessTokenConverter accessTokenConverter;
-    
+    private final AuthenticationManager authenticationManager;
+    private final TokenStore tokenStore;
+    private final AccessTokenConverter accessTokenConverter;
+
+    @Autowired
+    public AuthorizationServerConfig(AuthenticationManager authenticationManager, TokenStore tokenStore, AccessTokenConverter accessTokenConverter) {
+        this.authenticationManager = authenticationManager;
+        this.tokenStore = tokenStore;
+        this.accessTokenConverter = accessTokenConverter;
+    }
+
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints.tokenStore(tokenStore)
                 .accessTokenConverter(accessTokenConverter)
                 .authenticationManager(authenticationManager);
@@ -31,10 +38,10 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
-                    .withClient("authserver")
+                    .withClient("account-server")
                         .secret("secret")
                         .authorizedGrantTypes("password", "refresh_token")
-                        .scopes("authserver")
+                        .scopes("account-server")
                         .accessTokenValiditySeconds(60)
                         .autoApprove(true)
                 .and()

@@ -16,7 +16,7 @@ security:
 zuul:
     routes:
         account-server:
-            path: /auth/**
+            path: /account/**
             stripPrefix: false
             sensitiveHeaders:
             retryable: true
@@ -33,6 +33,9 @@ zuul:
 ribbon.ReadTimeout: 10000
 
 auth-server:
+    ribbon:
+        ServerListRefreshInterval: 5
+resource-server:
     ribbon:
         ServerListRefreshInterval: 5
 

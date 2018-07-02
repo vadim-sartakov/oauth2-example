@@ -54,7 +54,7 @@ public class GithubClientConfiguration {
         tokenServices.setRestTemplate(githubRestTemplate());
         return tokenServices;
     }
-    
+
     @Bean
     public OAuth2ClientAuthenticationProcessingFilter githubClientAuthenticationFilter() {
         OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter("/login/github");
@@ -62,5 +62,5 @@ public class GithubClientConfiguration {
         filter.setTokenServices(githubTokenServices());
         return filter;
     }
-    
+
 }

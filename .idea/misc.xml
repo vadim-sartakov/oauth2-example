@@ -9,6 +9,13 @@
         </counts>
       </usages-collector>
     </session>
+    <session id="1865369039">
+      <usages-collector id="statistics.spring.boot.run.usages">
+        <counts>
+          <entry key="LiveBeansNavigationHandler.fromCode" value="3" />
+        </counts>
+      </usages-collector>
+    </session>
   </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">

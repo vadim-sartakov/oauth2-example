@@ -45,9 +45,10 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
     
     public OAuth2StatelessClientContext(AccessTokenRequest accessTokenRequest, String prefix) {
         super(accessTokenRequest);
-        this.stateCookieName = prefix + "_" + "state";
-        this.accessTokenCookieName = prefix + "_" + OAuth2AccessToken.ACCESS_TOKEN;
-        this.refreshTokenCookieName = prefix + "_" + OAuth2AccessToken.REFRESH_TOKEN;
+        prefix = prefix.isEmpty() ? "" : prefix + "_";
+        this.stateCookieName = prefix + "state";
+        this.accessTokenCookieName = prefix + OAuth2AccessToken.ACCESS_TOKEN;
+        this.refreshTokenCookieName = prefix + OAuth2AccessToken.REFRESH_TOKEN;
     }
 
     @Override

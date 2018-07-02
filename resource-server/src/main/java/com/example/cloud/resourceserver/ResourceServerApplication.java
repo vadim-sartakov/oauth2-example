@@ -1,15 +1,15 @@
-package com.example.cloud.gateway;
+package com.example.cloud.resourceserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
 @SpringBootApplication
-@EnableZuulProxy
+@EnableResourceServer
 @EnableDiscoveryClient
-public class OauthGatewayApplication {
+public class ResourceServerApplication {
     public static void main(String[] args) {
-        SpringApplication.run(OauthGatewayApplication.class, args);
+        SpringApplication.run(ResourceServerApplication.class, args);
     }
 }

@@ -16,9 +16,9 @@ import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticat
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -26,18 +26,8 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 @Import(ResourceServerTokenServicesConfiguration.class)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final ResourceServerTokenServices tokenServices;
-    private final OAuth2RestTemplate restTemplate;
-    private final OAuth2StatelessClientAuthenticationFilter authenticationFilter;
-
-    @Autowired
-    public SecurityConfig(@Qualifier("jwtTokenServices") ResourceServerTokenServices tokenServices,
-                          OAuth2RestTemplate restTemplate,
-                          OAuth2StatelessClientAuthenticationFilter authenticationFilter) {
-        this.tokenServices = tokenServices;
-        this.restTemplate = restTemplate;
-        this.authenticationFilter = authenticationFilter;
-    }
+    @Autowired private @Qualifier("jwtTokenServices") ResourceServerTokenServices tokenServices;
+    @Autowired private OAuth2RestTemplate restTemplate;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -46,8 +36,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // '/api' path left unprotected for native apps.
                 // Security in this case will be handled by end resource servers.
                 .requestMatcher(new NegatedRequestMatcher(
-                        new AndRequestMatcher(
-                                new AntPathRequestMatcher("/api"),
+                        new OrRequestMatcher(
+                                new AntPathRequestMatcher("/api/**"),
                                 // Auth server has its own security configuration
                                 new AntPathRequestMatcher("/account/**")
                         )
@@ -62,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
                     .addFilterBefore(clientAuthenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class)
-                    .addFilterBefore(authenticationFilter, AbstractPreAuthenticatedProcessingFilter.class);
+                    .addFilterBefore(authenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class);
     }
  
     private OAuth2ClientAuthenticationProcessingFilter clientAuthenticationFilter() {
@@ -70,6 +60,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         filter.setTokenServices(tokenServices);
         filter.setRestTemplate(restTemplate);
         return filter;
+    }
+
+    private OAuth2StatelessClientAuthenticationFilter authenticationFilter() {
+        return new OAuth2StatelessClientAuthenticationFilter(tokenServices, restTemplate, restTemplate.getOAuth2ClientContext());
     }
     
 }

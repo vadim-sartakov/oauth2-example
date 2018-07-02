@@ -32,7 +32,7 @@ public class OAuth2StatelessClientAuthenticationFilter extends OncePerRequestFil
     }  
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         return SecurityContextHolder.getContext().getAuthentication() != null ||
                 clientContext.getAccessToken() == null;
     }
