@@ -1,7 +1,7 @@
 package com.example.cloud.authserver.config;
 
-import com.example.cloud.shared.oauth.client.configuration.EnableOAuth2StatelessClient;
 import com.example.cloud.shared.oauth.client.OAuth2StatelessClientAuthenticationFilter;
+import com.example.cloud.shared.oauth.client.configuration.EnableOAuth2StatelessClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
@@ -37,6 +36,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .requestMatcher(
+                        new NegatedRequestMatcher(
+                                new AntPathRequestMatcher("/login", "GET")
+                        )
+                )
                 .authorizeRequests()
                     .antMatchers("/login")
                         .permitAll()
@@ -47,18 +51,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                     .csrf()
-                        .csrfTokenRepository(csrfTokenRepository())
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .ignoringAntMatchers("/oauth/token")
                 .and()
                     .addFilterBefore(authServerClientAuthenticationFilter, AbstractPreAuthenticatedProcessingFilter.class)
                     .addFilterBefore(githubClientAuthenticationFilter, AbstractPreAuthenticatedProcessingFilter.class)
                     .addFilterBefore(authenticationFilter, AbstractPreAuthenticatedProcessingFilter.class);
     }
-    
-    private CsrfTokenRepository csrfTokenRepository() {
-        CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-        tokenRepository.setCookieName("XSRF-TOKEN");
-        return tokenRepository;
-    }
-        
+
 }

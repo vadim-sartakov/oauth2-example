@@ -1,0 +1,28 @@
+server:
+    port: 8081
+    context-path: /account
+    application.name: account-server
+
+security:
+    user.password: 123456
+    oauth2:
+        client:
+            client-id: authserver
+            client-secret: secret
+            access-token-uri: http://localhost:${server.port}/account/oauth/token
+        resource:
+            jwt.key-value: test
+
+github:
+    client:
+        client-id: 1a753cb929be837a9541
+        client-secret: 166d5ecc1bb532f426217c7cfe3777d1857c3bf1
+        accessTokenUri: https://github.com/login/oauth/access_token
+        userAuthorizationUri: https://github.com/login/oauth/authorize
+    resource:
+        user-info-uri: https://api.github.com/user
+
+logging:
+    level:
+        org.springframework.security: DEBUG
+        com.example.cloud: DEBUG

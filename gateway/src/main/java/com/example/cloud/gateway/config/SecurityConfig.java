@@ -1,7 +1,7 @@
 package com.example.cloud.gateway.config;
 
-import com.example.cloud.shared.oauth.client.configuration.EnableOAuth2StatelessClient;
 import com.example.cloud.shared.oauth.client.OAuth2StatelessClientAuthenticationFilter;
+import com.example.cloud.shared.oauth.client.configuration.EnableOAuth2StatelessClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerTokenServicesConfiguration;
@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
@@ -27,11 +26,19 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 @Import(ResourceServerTokenServicesConfiguration.class)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Qualifier("jwtTokenServices")
-    @Autowired private ResourceServerTokenServices tokenServices;
-    @Autowired private OAuth2RestTemplate restTemplate;
-    @Autowired private OAuth2StatelessClientAuthenticationFilter authenticationFilter;
-    
+    private final ResourceServerTokenServices tokenServices;
+    private final OAuth2RestTemplate restTemplate;
+    private final OAuth2StatelessClientAuthenticationFilter authenticationFilter;
+
+    @Autowired
+    public SecurityConfig(@Qualifier("jwtTokenServices") ResourceServerTokenServices tokenServices,
+                          OAuth2RestTemplate restTemplate,
+                          OAuth2StatelessClientAuthenticationFilter authenticationFilter) {
+        this.tokenServices = tokenServices;
+        this.restTemplate = restTemplate;
+        this.authenticationFilter = authenticationFilter;
+    }
+
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http

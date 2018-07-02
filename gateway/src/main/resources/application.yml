@@ -1,0 +1,42 @@
+server.port: 8080
+            
+spring.application.name: gateway
+    
+security:
+    oauth2:
+        client:
+            client-id: web
+            client-secret: secret
+            access-token-uri: http://localhost:8080/account/oauth/token
+            user-authorization-uri: http://localhost:8080/account/oauth/authorize
+        resource:
+            jwt:
+                key-value: test
+    
+zuul:
+    routes:
+        account-server:
+            path: /auth/**
+            stripPrefix: false
+            sensitiveHeaders:
+            retryable: true
+        resource-server-api:
+            path: /web-api/**
+            retryable: true
+            serviceId: resource-server
+        resource-server-web-api:
+            path: /api/**
+            retryable: true
+            serviceId: resource-server
+    add-host-header: true
+
+ribbon.ReadTimeout: 10000
+
+auth-server:
+    ribbon:
+        ServerListRefreshInterval: 5
+
+logging:
+    level:
+        org.springframework.security: DEBUG
+        org.springframework.cloud.netflix.zuul: DEBUG
