@@ -1,11 +1,11 @@
 server:
     port: 8081
-    context-path: /account
+    servlet:
+        context-path: /account
 
 spring.application.name: account-server
 
 security:
-    user.password: 123456
     oauth2:
         client:
             client-id: account-server
