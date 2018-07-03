@@ -3,7 +3,6 @@ package com.example.cloud.shared.oauth.client.configuration;
 import com.example.cloud.shared.oauth.client.OAuth2StatelessClientAuthenticationFilter;
 import com.example.cloud.shared.oauth.client.OAuth2StatelessClientContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
@@ -26,8 +25,8 @@ public class OAuth2StatelessClientConfiguration {
     @Qualifier("accessTokenRequest")
     private AccessTokenRequest accessTokenRequest;
 
-    @Autowired private ObjectProvider<HttpServletRequest> request;
-    @Autowired private ObjectProvider<HttpServletResponse> response;
+    @Autowired private HttpServletRequest request;
+    @Autowired private HttpServletResponse response;
     @Autowired private ServletContext servletContext;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private TokenStore tokenStore;
@@ -41,8 +40,8 @@ public class OAuth2StatelessClientConfiguration {
     public OAuth2ClientContext oauth2StatelessClientContext() {
         return OAuth2StatelessClientContext.builder()
                 .accessTokenRequest(accessTokenRequest)
-                .request(request.getIfAvailable())
-                .response(response.getIfAvailable())
+                .request(request)
+                .response(response)
                 .servletContext(servletContext)
                 .objectMapper(objectMapper)
                 .tokenStore(tokenStore)
