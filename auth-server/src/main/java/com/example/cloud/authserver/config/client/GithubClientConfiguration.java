@@ -1,6 +1,8 @@
 package com.example.cloud.authserver.config.client;
 
 import com.example.cloud.shared.oauth.client.OAuth2StatelessClientContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
@@ -16,6 +18,11 @@ import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticat
 import org.springframework.security.oauth2.client.token.AccessTokenRequest;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Configuration
 public class GithubClientConfiguration {
@@ -23,11 +30,25 @@ public class GithubClientConfiguration {
     @Autowired
     @Qualifier("accessTokenRequest")
     private AccessTokenRequest accessTokenRequest;
-    
+
+    @Autowired private ObjectProvider<HttpServletRequest> request;
+    @Autowired private ObjectProvider<HttpServletResponse> response;
+    @Autowired private ServletContext servletContext;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private TokenStore tokenStore;
+
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.INTERFACES)
     public OAuth2ClientContext githubClientContext() {
-        return new OAuth2StatelessClientContext(accessTokenRequest, "github");
+        return OAuth2StatelessClientContext.builder()
+                .accessTokenRequest(accessTokenRequest)
+                .request(request.getIfAvailable())
+                .response(response.getIfAvailable())
+                .servletContext(servletContext)
+                .objectMapper(objectMapper)
+                .tokenStore(tokenStore)
+                .prefix("github")
+                .build();
     }
     
     @Bean

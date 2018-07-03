@@ -7,16 +7,7 @@ package com.example.cloud.shared.oauth.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Builder;
 import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
 import org.springframework.security.oauth2.client.token.AccessTokenRequest;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -24,31 +15,42 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.web.util.WebUtils;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
 public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
 
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
+    private final ObjectMapper objectMapper;
+    private final TokenStore tokenStore;
+
+    private final String contextPath;
     private final String stateCookieName;
     private final String accessTokenCookieName;
     private final String refreshTokenCookieName;
-    
-    @Autowired private HttpServletRequest request;
-    @Autowired private HttpServletResponse response;
-    @Autowired private ServletContext servletContext;
-
-    @Autowired private ObjectMapper objectMapper;
-    @Autowired private TokenStore tokenStore;
 
     private OAuth2AccessToken currentAccessToken;
 
-    public OAuth2StatelessClientContext(AccessTokenRequest accessTokenRequest) {
-        this(accessTokenRequest, "");
-    }
-    
-    public OAuth2StatelessClientContext(AccessTokenRequest accessTokenRequest, String prefix) {
+    private OAuth2StatelessClientContext(AccessTokenRequest accessTokenRequest, HttpServletRequest request, HttpServletResponse response,
+                                        ObjectMapper objectMapper, TokenStore tokenStore, String contextPath,
+                                        String stateCookieName, String accessTokenCookieName, String refreshTokenCookieName) {
         super(accessTokenRequest);
-        prefix = prefix.isEmpty() ? "" : prefix + "_";
-        this.stateCookieName = prefix + "state";
-        this.accessTokenCookieName = prefix + OAuth2AccessToken.ACCESS_TOKEN;
-        this.refreshTokenCookieName = prefix + OAuth2AccessToken.REFRESH_TOKEN;
+        this.request = request;
+        this.response = response;
+        this.objectMapper = objectMapper;
+        this.tokenStore = tokenStore;
+        this.contextPath = contextPath;
+        this.stateCookieName = stateCookieName;
+        this.accessTokenCookieName = accessTokenCookieName;
+        this.refreshTokenCookieName = refreshTokenCookieName;
     }
 
     @Override
@@ -147,12 +149,31 @@ public class OAuth2StatelessClientContext extends DefaultOAuth2ClientContext {
         cookie.setSecure(request.isSecure());
         cookie.setHttpOnly(true);
         cookie.setMaxAge(maxAge);
-        cookie.setPath(getContextPath());
+        cookie.setPath(contextPath);
         response.addCookie(cookie);
     }
-    
-    private String getContextPath() {
-        return servletContext.getContextPath().isEmpty() ? "/" : servletContext.getContextPath();
+
+    @Builder
+    private static OAuth2StatelessClientContext newInstance(HttpServletRequest request,
+                                                            HttpServletResponse response,
+                                                            AccessTokenRequest accessTokenRequest,
+                                                            ObjectMapper objectMapper,
+                                                            TokenStore tokenStore,
+                                                            String prefix,
+                                                            ServletContext servletContext) {
+
+        String contextPath = servletContext.getContextPath().isEmpty() ? "/" : servletContext.getContextPath();
+
+        prefix = prefix == null ? "" : prefix.isEmpty() ? "" : prefix + "_";
+        String stateCookieName = prefix + "state";
+        String accessTokenCookieName = prefix + OAuth2AccessToken.ACCESS_TOKEN;
+        String refreshTokenCookieName = prefix + OAuth2AccessToken.REFRESH_TOKEN;
+
+        OAuth2StatelessClientContext instance = new OAuth2StatelessClientContext(accessTokenRequest, request,
+                response, objectMapper, tokenStore, contextPath, stateCookieName, accessTokenCookieName, refreshTokenCookieName);
+
+        return instance;
+
     }
 
 }
