@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.token.AccessTokenRequest;
@@ -30,11 +31,11 @@ import java.util.Map;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class OAuth2StatelessClientContext implements OAuth2ClientContext {
 
-    private final AccessTokenRequest accessTokenRequest;
-    private final HttpServletRequest request;
-    private final HttpServletResponse response;
-    private final ObjectMapper objectMapper;
-    private final TokenStore tokenStore;
+    @Getter private final AccessTokenRequest accessTokenRequest;
+    @Getter private final HttpServletRequest request;
+    @Getter private final HttpServletResponse response;
+    @Getter private final ObjectMapper objectMapper;
+    @Getter private final TokenStore tokenStore;
 
     private final String contextPath;
     private final String stateCookieName;
@@ -65,21 +66,16 @@ public class OAuth2StatelessClientContext implements OAuth2ClientContext {
     @Override
     public OAuth2AccessToken getAccessToken() {
 
-        if (currentAccessToken != null) {
-            return currentAccessToken;
-        }
+        if (currentAccessToken != null) return currentAccessToken;
 
         Cookie accessTokenCookie = WebUtils.getCookie(request, accessTokenCookieName);
         Cookie refreshTokenCookie = WebUtils.getCookie(request, refreshTokenCookieName);
 
-        if (accessTokenCookie == null) {
-            return null;
-        }
+        if (accessTokenCookie == null) return null;
 
         OAuth2AccessToken accessToken = tokenStore.readAccessToken(accessTokenCookie.getValue());
-        if (refreshTokenCookie != null && accessToken instanceof DefaultOAuth2AccessToken) {
+        if (refreshTokenCookie != null && accessToken instanceof DefaultOAuth2AccessToken)
             ((DefaultOAuth2AccessToken) accessToken).setRefreshToken(tokenStore.readRefreshToken(refreshTokenCookie.getValue()));
-        }
 
         return accessToken;
 
@@ -105,9 +101,7 @@ public class OAuth2StatelessClientContext implements OAuth2ClientContext {
     public Object removePreservedState(String stateKey) {
 
         Cookie cookie = WebUtils.getCookie(request, stateCookieName);
-        if (cookie == null) {
-            return null;
-        }
+        if (cookie == null) return null;
 
         Map<String, String> stateMap;
         try {
@@ -124,7 +118,9 @@ public class OAuth2StatelessClientContext implements OAuth2ClientContext {
             addCookie(stateCookieName, "", 0);
         } else {
             try {
-                addCookie(stateCookieName, objectMapper.writeValueAsString(stateMap), -1);
+                addCookie(stateCookieName,
+                        Base64.getEncoder().encodeToString(objectMapper.writeValueAsString(stateMap).getBytes(StandardCharsets.UTF_8)),
+                        -1);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
@@ -132,11 +128,6 @@ public class OAuth2StatelessClientContext implements OAuth2ClientContext {
 
         return value;
 
-    }
-
-    @Override
-    public AccessTokenRequest getAccessTokenRequest() {
-        return accessTokenRequest;
     }
 
     private void addCookie(String name, String value, int maxAge) {
