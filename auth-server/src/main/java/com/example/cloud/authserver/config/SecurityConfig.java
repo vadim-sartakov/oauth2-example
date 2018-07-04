@@ -32,10 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired private OAuth2ClientAuthenticationProcessingFilter authServerClientAuthenticationFilter;
     @Autowired private OAuth2ClientAuthenticationProcessingFilter githubClientAuthenticationFilter;
-
-    @Autowired
-    @Qualifier("authServerStatelessClientAuthenticationFilter")
-    private OAuth2StatelessClientAuthenticationFilter authenticationFilter;
+    @Autowired private OAuth2StatelessClientAuthenticationFilter authServerStatelessClientAuthenticationFilter;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -55,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                     .addFilterBefore(authServerClientAuthenticationFilter, AbstractPreAuthenticatedProcessingFilter.class)
                     .addFilterBefore(githubClientAuthenticationFilter, AbstractPreAuthenticatedProcessingFilter.class)
-                    .addFilterBefore(authenticationFilter, AbstractPreAuthenticatedProcessingFilter.class);
+                    .addFilterBefore(authServerStatelessClientAuthenticationFilter, AbstractPreAuthenticatedProcessingFilter.class);
     }
 
     @Bean

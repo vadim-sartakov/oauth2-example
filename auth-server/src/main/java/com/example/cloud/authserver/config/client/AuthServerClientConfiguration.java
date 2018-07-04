@@ -51,7 +51,7 @@ public class AuthServerClientConfiguration {
                 .servletContext(servletContext)
                 .objectMapper(objectMapper)
                 .tokenStore(tokenStore)
-                .prefix("github")
+                .prefix("account")
                 .build();
     }
 
