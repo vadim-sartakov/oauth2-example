@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.client.token.AccessTokenRequest;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.web.context.annotation.RequestScope;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -21,9 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 @EnableOAuth2Client
 public class OAuth2StatelessClientConfiguration {
     
-    @Autowired
-    @Qualifier("accessTokenRequest")
-    private AccessTokenRequest accessTokenRequest;
+    @Autowired private AccessTokenRequest accessTokenRequest;
 
     @Autowired private HttpServletRequest request;
     @Autowired private HttpServletResponse response;
@@ -35,7 +34,7 @@ public class OAuth2StatelessClientConfiguration {
     @Autowired private ResourceServerTokenServices tokenServices;
     
     @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.INTERFACES)
+    @RequestScope(proxyMode = ScopedProxyMode.INTERFACES)
     @Primary
     public OAuth2ClientContext oauth2StatelessClientContext() {
         return OAuth2StatelessClientContext.builder()
